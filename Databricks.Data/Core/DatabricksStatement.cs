@@ -49,10 +49,12 @@ namespace Databricks.Data.Core
                 Schema = schema ?? Session.Schema,
                 WaitTimeout = "30s",
                 OnWaitTimeout = "CANCEL",
-                Format = "ARROW_STREAM"
+                Format = "ARROW_STREAM",
+                Disposition = "EXTERNAL_LINKS" // Required for ARROW_STREAM format
             };
 
-            var uri = Session.BuildUri("/statements");
+            // Databricks SQL API v2.0: POST /api/2.0/sql/statements
+            var uri = Session.BuildUri("");
 
             return new DatabricksRestRequest
             {
@@ -65,7 +67,8 @@ namespace Databricks.Data.Core
 
         private DatabricksRestRequest BuildGetStatementRequest(string statementId)
         {
-            var uri = Session.BuildUri($"/statements/{statementId}");
+            // Databricks SQL API v2.0: GET /api/2.0/sql/statements/{statement_id}
+            var uri = Session.BuildUri($"/{statementId}");
 
             return new DatabricksRestRequest
             {
@@ -77,7 +80,8 @@ namespace Databricks.Data.Core
 
         private DatabricksRestRequest BuildCancelStatementRequest(string statementId)
         {
-            var uri = Session.BuildUri($"/statements/{statementId}/cancel");
+            // Databricks SQL API v2.0: POST /api/2.0/sql/statements/{statement_id}/cancel
+            var uri = Session.BuildUri($"/{statementId}/cancel");
 
             return new DatabricksRestRequest
             {
@@ -85,6 +89,59 @@ namespace Databricks.Data.Core
                 authorizationToken = Session.Token,
                 sid = Session.SessionId
             };
+        }
+
+        internal async Task<StatementChunkResponse> GetChunkAsync(string statementId, int chunkIndex, CancellationToken cancellationToken)
+        {
+            // Databricks SQL API v2.0: GET /api/2.0/sql/statements/{statement_id}/result/chunks/{chunk_index}
+            var uri = Session.BuildUri($"/{statementId}/result/chunks/{chunkIndex}");
+
+            var request = new DatabricksRestRequest
+            {
+                Url = uri,
+                authorizationToken = Session.Token,
+                sid = Session.SessionId
+            };
+
+            return await _restRequester.GetAsync<StatementChunkResponse>(request, cancellationToken);
+        }
+
+        /// <summary>
+        /// Fetches Arrow format binary data from a chunk endpoint
+        /// </summary>
+        internal async Task<byte[]> GetChunkArrowDataAsync(string statementId, int chunkIndex, CancellationToken cancellationToken)
+        {
+            // Databricks SQL API v2.0: GET /api/2.0/sql/statements/{statement_id}/result/chunks/{chunk_index}
+            // Request Arrow format by setting Accept header or format query parameter
+            var uri = Session.BuildUri($"/{statementId}/result/chunks/{chunkIndex}?format=ARROW_STREAM");
+
+            var request = new DatabricksRestRequest
+            {
+                Url = uri,
+                authorizationToken = Session.Token,
+                sid = Session.SessionId
+            };
+
+            using (var response = await _restRequester.GetAsync(request, cancellationToken))
+            {
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Fetches Arrow format binary data from an external link (presigned URL)
+        /// Note: External links must be fetched without authentication tokens
+        /// </summary>
+        internal async Task<byte[]> GetExternalLinkArrowDataAsync(string externalLinkUrl, CancellationToken cancellationToken)
+        {
+            using (var httpClient = new System.Net.Http.HttpClient())
+            {
+                // External links are presigned URLs - do NOT include auth tokens
+                var response = await httpClient.GetAsync(externalLinkUrl, cancellationToken).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            }
         }
 
         private async Task<DatabricksBaseResultSet> ExecuteInternalAsync(int timeout, string sql, Dictionary<string, object> parameters, bool describeOnly, bool asyncExec, CancellationToken cancellationToken)
@@ -112,9 +169,29 @@ namespace Databricks.Data.Core
                     return new DatabricksAsyncResultSet(executeResponse.StatementId, this);
                 }
 
-                // Poll for results if query is still running
+                // Check if query already succeeded synchronously
                 var statementId = executeResponse.StatementId;
                 var status = executeResponse.Status;
+                
+                // If the query succeeded immediately, build result set from execute response
+                if (status != null && status.State == "SUCCEEDED")
+                {
+                    return BuildResultSet(executeResponse, cancellationToken);
+                }
+
+                // Check for immediate failure
+                if (status != null && (status.State == "FAILED" || status.State == "CANCELED"))
+                {
+                    var errorMsg = status.Error?.Message ?? "Query execution failed";
+                    var errorCode = status.Error?.ErrorCode ?? "UNKNOWN";
+                    throw new DatabricksDbException(
+                        errorCode,
+                        0,
+                        errorMsg,
+                        statementId);
+                }
+
+                // Poll for results if query is still running
                 GetStatementResponse getResponse = null;
 
                 while (status != null && (status.State == "PENDING" || status.State == "RUNNING"))

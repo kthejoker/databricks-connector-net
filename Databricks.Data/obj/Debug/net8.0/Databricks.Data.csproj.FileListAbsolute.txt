@@ -1,0 +1,16 @@
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/obj/Debug/net8.0/Databricks.Data.csproj.AssemblyReference.cache
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/obj/Debug/net8.0/Databricks.Data.csproj.SuggestedBindingRedirects.cache
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/obj/Debug/net8.0/Databricks.Data.dll.config
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/obj/Debug/net8.0/Databricks.Data.GeneratedMSBuildEditorConfig.editorconfig
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/obj/Debug/net8.0/Databricks.Data.AssemblyInfoInputs.cache
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/obj/Debug/net8.0/Databricks.Data.AssemblyInfo.cs
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/obj/Debug/net8.0/Databricks.Data.csproj.CoreCompileInputs.cache
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/obj/Debug/net8.0/Databricks.Data.sourcelink.json
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/bin/Debug/net8.0/Databricks.Data.dll.config
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/bin/Debug/net8.0/Databricks.Data.deps.json
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/bin/Debug/net8.0/Databricks.Data.dll
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/bin/Debug/net8.0/Databricks.Data.pdb
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/obj/Debug/net8.0/Databricks.Data.dll
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/obj/Debug/net8.0/refint/Databricks.Data.dll
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/obj/Debug/net8.0/Databricks.Data.pdb
+/Users/kyle.hale/Repos/snowflake-connector-net/Databricks.Data/obj/Debug/net8.0/ref/Databricks.Data.dll

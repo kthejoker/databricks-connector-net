@@ -23,7 +23,7 @@ namespace Databricks.Data.Core.Session
             }
             catch (ArgumentException e)
             {
-                logger.Warn("Invalid connectionString", e);
+                logger.Error("Invalid connectionString", e);
                 throw new DatabricksDbException(e,
                                 DatabricksError.INVALID_CONNECTION_STRING,
                                 e.Message);

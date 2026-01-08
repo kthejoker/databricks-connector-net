@@ -43,9 +43,24 @@ namespace Databricks.Data.Core.Session
             HttpPath = Properties[DatabricksSessionProperty.HTTP_PATH];
             Token = Properties[DatabricksSessionProperty.TOKEN];
 
+            // Extract warehouse ID from HTTP_PATH if not explicitly provided
+            // HTTP_PATH format: /sql/1.0/warehouses/{warehouse-id}
             if (Properties.TryGetValue(DatabricksSessionProperty.WAREHOUSE_ID, out var warehouseId))
             {
                 WarehouseId = warehouseId;
+            }
+            else if (!string.IsNullOrEmpty(HttpPath))
+            {
+                // Try to extract warehouse ID from HTTP_PATH
+                var parts = HttpPath.Split('/');
+                for (int i = 0; i < parts.Length - 1; i++)
+                {
+                    if (parts[i] == "warehouses" && i + 1 < parts.Length)
+                    {
+                        WarehouseId = parts[i + 1];
+                        break;
+                    }
+                }
             }
 
             if (Properties.TryGetValue(DatabricksSessionProperty.CATALOG, out var catalog))
@@ -127,7 +142,12 @@ namespace Databricks.Data.Core.Session
             {
                 baseUrl = "https://" + baseUrl;
             }
-            return new Uri($"{baseUrl}{HttpPath}{path}");
+            // Databricks SQL Statement Execution API v2.0 endpoints:
+            // Execute: POST /api/2.0/sql/statements
+            // Get status: GET /api/2.0/sql/statements/{statement_id}
+            // Cancel: POST /api/2.0/sql/statements/{statement_id}/cancel
+            // path should be like "" (empty for execute), "/{statement_id}", or "/{statement_id}/cancel"
+            return new Uri($"{baseUrl}/api/2.0/sql/statements{path}");
         }
 
         internal bool GetPooling()

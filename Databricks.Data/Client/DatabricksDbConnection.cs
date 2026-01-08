@@ -13,7 +13,7 @@ namespace Databricks.Data.Client
     [System.ComponentModel.DesignerCategory("Code")]
     public class DatabricksDbConnection : DbConnection
     {
-        private DatabricksLogger logger = DatabricksLoggerFactory.GetLogger<DatabricksDbConnection>();
+        private IDatabricksLogger logger = DatabricksLoggerFactory.GetLogger<DatabricksDbConnection>();
 
         internal DatabricksSession Session { get; set; }
 
@@ -56,7 +56,7 @@ namespace Databricks.Data.Client
             return _connectionState != ConnectionState.Closed && Session != null;
         }
 
-        public override string Database => IsOpen() ? Session.Database : string.Empty;
+        public override string Database => IsOpen() ? Session.Catalog : string.Empty;
 
         public override int ConnectionTimeout => this._connectionTimeout;
 

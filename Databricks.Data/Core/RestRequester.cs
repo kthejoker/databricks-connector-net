@@ -54,6 +54,8 @@ namespace Databricks.Data.Core
             using (var response = await SendAsync(HttpMethod.Post, request, cancellationToken).ConfigureAwait(false))
             {
                 var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                logger.Debug($"POST Response Status: {response.StatusCode}");
+                logger.Debug($"POST Response Body: {json}");
                 return JsonConvert.DeserializeObject<T>(json, JsonUtils.JsonSettings);
             }
         }
@@ -69,6 +71,8 @@ namespace Databricks.Data.Core
             using (HttpResponseMessage response = await GetAsync(request, cancellationToken).ConfigureAwait(false))
             {
                 var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                logger.Debug($"GET Response Status: {response.StatusCode}");
+                logger.Debug($"GET Response Body: {json}");
                 return JsonConvert.DeserializeObject<T>(json, JsonUtils.JsonSettings);
             }
         }
@@ -88,6 +92,24 @@ namespace Databricks.Data.Core
                                                           IRestRequest request,
                                                           CancellationToken externalCancellationToken)
         {
+            // Log request details before creating HttpRequestMessage
+            if (request is DatabricksRestRequest dbRequest)
+            {
+                logger.Debug($"{method} Request URL: {dbRequest.Url}");
+                if (dbRequest.jsonBody != null)
+                {
+                    var requestBody = JsonConvert.SerializeObject(dbRequest.jsonBody, JsonUtils.JsonSettings);
+                    logger.Debug($"{method} Request Body: {requestBody}");
+                }
+                if (!string.IsNullOrEmpty(dbRequest.authorizationToken))
+                {
+                    var tokenPreview = dbRequest.authorizationToken.Length > 20 
+                        ? dbRequest.authorizationToken.Substring(0, 20) + "..." 
+                        : dbRequest.authorizationToken;
+                    logger.Debug($"{method} Authorization: Bearer {tokenPreview}");
+                }
+            }
+            
             using (HttpRequestMessage message = request.ToRequestMessage(method))
             {
                 return await SendAsync(message, request.GetRestTimeout(), externalCancellationToken, request.getSid()).ConfigureAwait(false);
@@ -107,6 +129,15 @@ namespace Databricks.Data.Core
                 {
                     HttpResponseMessage response = null;
                     logger.Debug($"Executing: {sid} {message.Method} {message.RequestUri}");
+                    logger.Debug($"Request Headers:");
+                    foreach (var header in message.Headers)
+                    {
+                        logger.Debug($"  {header.Key}: {string.Join(", ", header.Value)}");
+                    }
+                    if (message.Content != null)
+                    {
+                        logger.Debug($"Content-Type: {message.Content.Headers.ContentType?.MediaType}");
+                    }
                     var watch = new Stopwatch();
                     try
                     {

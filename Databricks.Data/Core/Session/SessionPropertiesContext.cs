@@ -1,3 +1,4 @@
+using System;
 using System.Security;
 using Databricks.Data.Core.Session;
 

@@ -286,6 +286,11 @@ namespace Databricks.Data.Client
             }
         }
 
+        public override IEnumerator GetEnumerator()
+        {
+            return new DbEnumerator(this, closeReader: false);
+        }
+
         private DataTable PopulateSchemaTable(DatabricksBaseResultSet resultSet)
         {
             DataTable schemaTable = new DataTable("SchemaTable");

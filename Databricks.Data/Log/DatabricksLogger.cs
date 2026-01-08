@@ -14,35 +14,51 @@ namespace Databricks.Data.Log
     public class DatabricksLogger : IDatabricksLogger
     {
         private readonly string _name;
+        private static bool _consoleOutputEnabled = false;
 
         public DatabricksLogger(string name)
         {
             _name = name;
         }
 
+        public static void EnableConsoleOutput(bool enable = true)
+        {
+            _consoleOutputEnabled = enable;
+        }
+
+        private void WriteLine(string level, string message)
+        {
+            var logMessage = $"[{level}] [{_name}] {message}";
+            System.Diagnostics.Debug.WriteLine(logMessage);
+            if (_consoleOutputEnabled)
+            {
+                Console.WriteLine(logMessage);
+            }
+        }
+
         public void Debug(string message)
         {
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] [{_name}] {message}");
+            WriteLine("DEBUG", message);
         }
 
         public void Info(string message)
         {
-            System.Diagnostics.Debug.WriteLine($"[INFO] [{_name}] {message}");
+            WriteLine("INFO", message);
         }
 
         public void Warn(string message)
         {
-            System.Diagnostics.Debug.WriteLine($"[WARN] [{_name}] {message}");
+            WriteLine("WARN", message);
         }
 
         public void Error(string message)
         {
-            System.Diagnostics.Debug.WriteLine($"[ERROR] [{_name}] {message}");
+            WriteLine("ERROR", message);
         }
 
         public void Error(string message, Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[ERROR] [{_name}] {message}: {ex}");
+            WriteLine("ERROR", $"{message}: {ex}");
         }
     }
 

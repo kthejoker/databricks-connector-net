@@ -35,6 +35,9 @@ namespace Databricks.Data.Core
 
         [JsonProperty(PropertyName = "manifest")]
         internal StatementManifest Manifest { get; set; }
+
+        [JsonProperty(PropertyName = "result", NullValueHandling = NullValueHandling.Ignore)]
+        internal StatementResult Result { get; set; }
     }
 
     // Databricks SQL API Statement Status
@@ -87,6 +90,37 @@ namespace Databricks.Data.Core
 
         [JsonProperty(PropertyName = "data_array")]
         internal List<List<object>> DataArray { get; set; }
+
+        [JsonProperty(PropertyName = "next_chunk_index", NullValueHandling = NullValueHandling.Ignore)]
+        internal int? NextChunkIndex { get; set; }
+
+        [JsonProperty(PropertyName = "next_chunk_internal_link", NullValueHandling = NullValueHandling.Ignore)]
+        internal string NextChunkInternalLink { get; set; }
+
+        [JsonProperty(PropertyName = "external_links", NullValueHandling = NullValueHandling.Ignore)]
+        internal List<ExternalLink> ExternalLinks { get; set; }
+    }
+
+    // Databricks SQL API External Link (for EXTERNAL_LINKS disposition)
+    internal class ExternalLink
+    {
+        [JsonProperty(PropertyName = "chunk_index")]
+        internal int ChunkIndex { get; set; }
+
+        [JsonProperty(PropertyName = "row_count")]
+        internal int RowCount { get; set; }
+
+        [JsonProperty(PropertyName = "row_offset")]
+        internal long RowOffset { get; set; }
+
+        [JsonProperty(PropertyName = "byte_count")]
+        internal long? ByteCount { get; set; }
+
+        [JsonProperty(PropertyName = "external_link")]
+        internal string ExternalLinkUrl { get; set; }
+
+        [JsonProperty(PropertyName = "expiration")]
+        internal string Expiration { get; set; }
 
         [JsonProperty(PropertyName = "next_chunk_index", NullValueHandling = NullValueHandling.Ignore)]
         internal int? NextChunkIndex { get; set; }
@@ -154,6 +188,37 @@ namespace Databricks.Data.Core
 
         [JsonProperty(PropertyName = "data_array")]
         internal List<List<object>> DataArray { get; set; }
+
+        [JsonProperty(PropertyName = "external_links", NullValueHandling = NullValueHandling.Ignore)]
+        internal List<ExternalLink> ExternalLinks { get; set; }
+
+        [JsonProperty(PropertyName = "next_chunk_index", NullValueHandling = NullValueHandling.Ignore)]
+        internal int? NextChunkIndex { get; set; }
+
+        [JsonProperty(PropertyName = "next_chunk_internal_link", NullValueHandling = NullValueHandling.Ignore)]
+        internal string NextChunkInternalLink { get; set; }
+    }
+
+    // Databricks SQL API Statement Chunk Response (for GET /api/2.0/sql/statements/{id}/result/chunks/{index})
+    internal class StatementChunkResponse : BaseRestResponse
+    {
+        [JsonProperty(PropertyName = "chunk_index")]
+        internal int ChunkIndex { get; set; }
+
+        [JsonProperty(PropertyName = "row_count")]
+        internal int RowCount { get; set; }
+
+        [JsonProperty(PropertyName = "row_offset")]
+        internal long RowOffset { get; set; }
+
+        [JsonProperty(PropertyName = "byte_count", NullValueHandling = NullValueHandling.Ignore)]
+        internal long? ByteCount { get; set; }
+
+        [JsonProperty(PropertyName = "data_array", NullValueHandling = NullValueHandling.Ignore)]
+        internal List<List<object>> DataArray { get; set; }
+
+        [JsonProperty(PropertyName = "external_links", NullValueHandling = NullValueHandling.Ignore)]
+        internal List<ExternalLink> ExternalLinks { get; set; }
 
         [JsonProperty(PropertyName = "next_chunk_index", NullValueHandling = NullValueHandling.Ignore)]
         internal int? NextChunkIndex { get; set; }
